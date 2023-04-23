@@ -2,8 +2,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+  <a href="https://github.com/pwa4owski/NexignBootcampHW/tree/CDR">
+    <img src="images/bootcamp.png" alt="Logo">
   </a>
 
   <h3 align="center">NexignBootcampHW</h3>
@@ -25,7 +25,7 @@
     </li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Вклад участников</a></li>
-    <li><a href="#contact">Contact</a>
+    <li><a href="#contact">Контакты</a>
     </li>
   </ol>
 </details>
@@ -34,8 +34,6 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
 
 Проект для тарификации пользователей по файлу cdr, состоящий из нескольких компонентов:
 * CRM
@@ -75,9 +73,10 @@ This section should list any major frameworks/libraries used to bootstrap your p
 
 для тестировщика:
 - [x] Составить тестовую документацию
+- [x] Создать генератор CDR файлов
 - [x] Составить тесты для CDR
-- [ ] Составить тесты для API
-- [ ] Составить интеграционные тесты
+- [ ] Составить автотесты для API
+- [ ] Составить интеграционные автотесты
 
 
 <p align="right">(<a href="#readme-top">к началу</a>)</p>
@@ -91,8 +90,8 @@ This section should list any major frameworks/libraries used to bootstrap your p
 *
 
 Вклад тестировщика:
-* создание тестовой документации
-* создание набора тестов
+* разработан генератор CDR файлов
+* добавлена тестовая документация
 
 <p align="right">(<a href="#readme-top">к началу</a>)</p>
 
