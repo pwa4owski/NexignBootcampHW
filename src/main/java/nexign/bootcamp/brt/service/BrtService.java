@@ -87,7 +87,7 @@ public class BrtService {
                     .orElseThrow(() -> new NoSuchAbonentException(res.getNumberPhone()));
             for(CallReport callReport : res.getCallReports()){
                 CallDetails callDetails = CallDetails.builder()
-                        .callType((callReport.getCallType().equals(CallType.INCOMING) ? "01" : "02"))
+                        .callType((callReport.getCallType().equals(CallType.OUTCOMING) ? "01" : "02"))
                         .startTime(callReport.getStarted())
                         .endTime(callReport.getEnded())
                         .duration(callReport.getDuration())

@@ -39,14 +39,7 @@ public class HrsService {
         }
         Customer customer = customers.get(arg[1]);
         if(customer == null){
-            int rateCode = Integer.parseInt(arg[4]);
-            try {
-                customer = new Customer(arg[1], rateCode);
-            }
-            catch (IllegalArgumentException | IllegalAccessException ex){
-                System.out.println(ex.getMessage());
-                return;
-            }
+            customer = new Customer(arg[1]);
         }
         try {
             LocalDateTime start = LocalDateTime.parse(arg[2], dtf);
