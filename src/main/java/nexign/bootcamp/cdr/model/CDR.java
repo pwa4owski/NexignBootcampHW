@@ -1,4 +1,4 @@
-package nexign.bootcamp.cdr.dto;
+package nexign.bootcamp.cdr.model;
 
 public class CDR {
 
@@ -19,7 +19,7 @@ public class CDR {
         return  typeOfCall + ", " +
                 number + ", " +
                 startCall + ", " +
-                endCall + ", ";
+                endCall;
     }
 
 }

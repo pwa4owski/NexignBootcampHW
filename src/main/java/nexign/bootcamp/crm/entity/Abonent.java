@@ -1,15 +1,18 @@
 package nexign.bootcamp.crm.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "abonent")
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Abonent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,5 +25,14 @@ public class Abonent {
     @JoinColumn(name = "tariff_id")
     private Tariff tariff;
 
-    private Integer balance;
+    private Double balance;
+
+    @OneToMany(mappedBy = "abonent", fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    List<CallDetails> calls = new ArrayList<>();
+
+    public void addCall(CallDetails callDetails){
+        calls.add(callDetails);
+        callDetails.setAbonent(this);
+    }
+
 }

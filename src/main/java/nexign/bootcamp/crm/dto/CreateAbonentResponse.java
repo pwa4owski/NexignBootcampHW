@@ -5,8 +5,9 @@ import lombok.Data;
 
 @Data
 @Builder
-public class PaymentResponse {
-    private Integer id;
+public class CreateAbonentResponse {
     private String numberPhone;
-    private Double money;
+    private Integer tariffId;
+    private Double balance;
 }
+

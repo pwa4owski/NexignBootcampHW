@@ -1,19 +1,25 @@
 package nexign.bootcamp.crm.service;
 
-import nexign.bootcamp.crm.dto.ChangeTariffRequest;
-import nexign.bootcamp.crm.dto.ChangeTariffResponse;
+import nexign.bootcamp.cdr.service.CdrService;
+import nexign.bootcamp.crm.dto.*;
+import nexign.bootcamp.crm.entity.Abonent;
 import nexign.bootcamp.crm.repository.AbonentRepo;
 import nexign.bootcamp.crm.repository.TariffRepo;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ManagerService {
     private final AbonentRepo abonentRepo;
     private final TariffRepo tariffRepo;
 
-    public ManagerService(AbonentRepo abonentRepo, TariffRepo tariffRepo) {
+    private final CdrService cdrService;
+
+    public ManagerService(AbonentRepo abonentRepo, TariffRepo tariffRepo, CdrService cdrService) {
         this.abonentRepo = abonentRepo;
         this.tariffRepo = tariffRepo;
+        this.cdrService = cdrService;
     }
 
     public ChangeTariffResponse changeTariff(ChangeTariffRequest changeTariffRequest) {
@@ -28,5 +34,27 @@ public class ManagerService {
                 .numberPhone(abonent.getPhoneNumber())
                 .tariffId(abonent.getTariff().getId())
                 .build();
+    }
+
+    public CreateAbonentResponse createAbonent(CreateAbonentRequest createAbonentRequest) {
+        var tariff = tariffRepo.findById(createAbonentRequest.getTariffId())
+                .orElseThrow(() -> new IllegalArgumentException("тариф с таким идентификатором отсутствует"));
+
+        var abonent = Abonent.builder()
+                .balance(createAbonentRequest.getBalance())
+                .phoneNumber(createAbonentRequest.getNumberPhone())
+                .tariff(tariff)
+                .build();
+
+        abonent = abonentRepo.save(abonent);
+        return CreateAbonentResponse.builder()
+                .balance(abonent.getBalance())
+                .numberPhone(abonent.getPhoneNumber())
+                .tariffId(abonent.getTariff().getId())
+                .build();
+    }
+
+    public List<AbonentTarrificationResponse> processBilling() {
+        return cdrService.processTariffication();
     }
 }

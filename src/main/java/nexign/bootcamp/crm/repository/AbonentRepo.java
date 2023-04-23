@@ -8,6 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface AbonentRepo extends JpaRepository<Abonent, Integer> {
-
     Optional<Abonent> findByPhoneNumber(String phoneNumber);
 }

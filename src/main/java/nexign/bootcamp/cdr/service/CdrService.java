@@ -1,17 +1,35 @@
-package nexign.bootcamp.cdr.controller;
+package nexign.bootcamp.cdr.service;
 
-import nexign.bootcamp.cdr.dto.CDR;
+import nexign.bootcamp.brt.service.BrtService;
+import nexign.bootcamp.cdr.model.CDR;
+import nexign.bootcamp.crm.dto.AbonentTarrificationResponse;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class CDRController {
-    public void CDRCreator() {
+@Service
+public class CdrService {
+
+    @Value("${cdr.path}")
+    private String pathToCdr;
+
+    private final BrtService brtService;
+
+
+
+    public CdrService(BrtService brtService) {
+        this.brtService = brtService;
+    }
+
+    private void generate() {
         Random randomize = new Random();
         String formattedDateStart = null, formattedDateEnd=null, phoneCall;
         ArrayList<CDR> cdrList = new ArrayList<>();
@@ -22,7 +40,7 @@ public class CDRController {
         String startDate = "20220101000000";
         String endDate = "20221231235959";
 
-        for(int i=0; i<=amount; i++) {
+        for(int i=0; i < amount; i++) {
 
             // генерируем случайное число от 0 до 1
             int randomNumber = randomize.nextInt(2);
@@ -81,14 +99,20 @@ public class CDRController {
 
         // производим запись в файл
         try (
-                FileWriter writer = new FileWriter("src/main/resources/CDRRandom.txt")) {
+                FileWriter writer = new FileWriter(pathToCdr)
+        )
+        {
             for (CDR cdr : cdrList) {
                 writer.write(cdr.toString() + "\n");
             }
-        } catch (
-                IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<AbonentTarrificationResponse> processTariffication(){
+        generate();
+        return brtService.processTariffication();
     }
 
 }
