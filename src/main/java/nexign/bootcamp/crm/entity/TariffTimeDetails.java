@@ -32,8 +32,8 @@ public class TariffTimeDetails {
     private Integer abonentFee;
 
     @Column(name = "incoming_minute_cost", nullable = false)
-    private Float incomingMinuteCost;
+    private Double incomingMinuteCost;
 
     @Column(name = "outcoming_minute_cost", nullable = false)
-    private Float outcomingMinuteCost;
+    private Double outcomingMinuteCost;
 }

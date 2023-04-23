@@ -33,7 +33,7 @@ public class HrsService {
 
     private void parseCdrPlus(String line) {
         String[] arg = line.split(", ");
-        if(arg.length != 4){
+        if(arg.length != 5){
             log.atWarn().log("HRS: строка cdr+ некорректна. Пропуск");
             return;
         }
@@ -78,7 +78,7 @@ public class HrsService {
             customer.getCalls().sort(Comparator.comparing(Call::getEnded));
             var abonent = abonentRepo.findByPhoneNumber(customer.getNumber())
                     .orElseThrow(() -> new RuntimeException("cdr+ невалиден!"));
-            var tariff = abonent.getTariff();
+            Tariff tariff = abonent.getTariff();
             if(tariff == null){
                 throw new IllegalStateException("У абонента не назначен тариф");
             }
@@ -100,9 +100,9 @@ public class HrsService {
                     call.getStarted(),
                     call.getEnded());
             if (call.getCallType().equals(CallType.INCOMING)) {
-                callCost += callReport.calcMinutesDuration() * tariff.getIncomingMinuteCost();
+                callCost = callReport.calcMinutesDuration() * tariff.getIncomingMinuteCost();
             } else {
-                callCost += callReport.calcMinutesDuration() * tariff.getOutcomingMinuteCost();
+                callCost = callReport.calcMinutesDuration() * tariff.getOutcomingMinuteCost();
             }
             sum += callCost;
             callReport.setCost(callCost);
@@ -119,13 +119,13 @@ public class HrsService {
         List<CallReport> callReports = new ArrayList<>();
         double sum = tariffTimeDetails.getAbonentFee();
         int incomingMinutesLeft = tariffTimeDetails.getIncomingMinutesLimit();
-        int upcomingMinutesLeft = tariffTimeDetails.getOutcomingMinutesLimit();
+        int outcomingMinutesLeft = tariffTimeDetails.getOutcomingMinutesLimit();
 
         for (Call call : calls) {
             var callReport = new CallReport(call.getCallType(),
                     call.getStarted(),
                     call.getEnded());
-            float callCost = 0;
+            double callCost = 0;
             var minutesDuration = callReport.calcMinutesDuration();
             if (call.getCallType().equals(CallType.INCOMING)) {
                 if (incomingMinutesLeft >= minutesDuration) {
@@ -133,25 +133,31 @@ public class HrsService {
                     callCost += minutesDuration * tariffTimeDetails.getIncomingMinuteCost();
                 } else {
                     if (incomingMinutesLeft > 0) {
-                        callCost += minutesDuration * tariffTimeDetails.getIncomingMinuteCost();
+                        callCost += incomingMinutesLeft * tariffTimeDetails.getIncomingMinuteCost();
                         minutesDuration -= incomingMinutesLeft;
                         incomingMinutesLeft = 0;
                     }
                     callCost += minutesDuration * tariff.getIncomingMinuteCost();
                 }
+                if(tariff.getTimeDetails().getCommonMinutesLimit()){
+                    outcomingMinutesLeft = incomingMinutesLeft;
+                }
             }
             if (call.getCallType().equals(CallType.OUTCOMING)) {
-                if (upcomingMinutesLeft >= minutesDuration) {
-                    upcomingMinutesLeft -= minutesDuration;
+                if (outcomingMinutesLeft >= minutesDuration) {
+                    outcomingMinutesLeft -= minutesDuration;
                     callCost += minutesDuration * tariffTimeDetails.getOutcomingMinuteCost();
                 }
                 else {
-                    if (upcomingMinutesLeft > 0) {
-                        callCost += minutesDuration * tariffTimeDetails.getOutcomingMinuteCost();
-                        minutesDuration -= upcomingMinutesLeft;
-                        upcomingMinutesLeft = 0;
+                    if (outcomingMinutesLeft > 0) {
+                        callCost += outcomingMinutesLeft * tariffTimeDetails.getOutcomingMinuteCost();
+                        minutesDuration -= outcomingMinutesLeft;
+                        outcomingMinutesLeft = 0;
                     }
-                    callCost += minutesDuration * tariff.getIncomingMinuteCost();
+                    callCost += minutesDuration * tariff.getOutcomingMinuteCost();
+                }
+                if(tariff.getTimeDetails().getCommonMinutesLimit()){
+                    incomingMinutesLeft = outcomingMinutesLeft;
                 }
             }
             callReport.setCost(callCost);

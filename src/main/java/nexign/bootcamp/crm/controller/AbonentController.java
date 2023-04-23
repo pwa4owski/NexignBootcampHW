@@ -1,5 +1,6 @@
 package nexign.bootcamp.crm.controller;
 
+import nexign.bootcamp.crm.dto.AbonentReportResponse;
 import nexign.bootcamp.crm.dto.PaymentRequest;
 import nexign.bootcamp.crm.dto.PaymentResponse;
 import nexign.bootcamp.crm.service.AbonentService;
@@ -23,5 +24,10 @@ public class AbonentController {
     @PatchMapping("/pay")
     public PaymentResponse pay(@RequestBody @Validated PaymentRequest payment){
         return abonentService.pay(payment);
+    }
+
+    @GetMapping("/report/{numberPhone}")
+    public AbonentReportResponse getReport(@PathVariable String numberPhone){
+        return abonentService.getReport(numberPhone);
     }
 }

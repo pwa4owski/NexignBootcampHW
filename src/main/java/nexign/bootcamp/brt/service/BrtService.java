@@ -22,7 +22,6 @@ import java.util.List;
 @Slf4j
 public class BrtService {
 
-
     private final HrsService hrsService;
     private final AbonentRepo abonentRepo;
 
@@ -47,7 +46,7 @@ public class BrtService {
         if(abonent.getBalance() < 0){
             throw new NotPositiveBalanceException(arg[1]);
         }
-        return String.format("%s %d", cdrLine, abonent.getTariff().getId());
+        return String.format("%s, %d\n", cdrLine, abonent.getTariff().getId());
     }
 
 
@@ -80,6 +79,9 @@ public class BrtService {
             log.atError().log(e.getMessage());
         }
 
+        // очистим в бд результаты прошлой тарификации
+        abonentRepo.findAll().forEach(abonent -> abonent.getCalls().clear());
+
         var tarifficationResults = hrsService.getTarrificationResults();
         List<AbonentTarrificationResponse> responses = new ArrayList<>();
         for(AbonentTarifficationRes res : tarifficationResults){
@@ -105,7 +107,4 @@ public class BrtService {
         }
         return responses;
     }
-
-
-
 }

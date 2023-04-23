@@ -3,6 +3,8 @@ package nexign.bootcamp.cdr.service;
 import nexign.bootcamp.brt.service.BrtService;
 import nexign.bootcamp.cdr.model.CDR;
 import nexign.bootcamp.crm.dto.AbonentTarrificationResponse;
+import nexign.bootcamp.crm.entity.Abonent;
+import nexign.bootcamp.crm.repository.AbonentRepo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -21,15 +23,23 @@ public class CdrService {
     @Value("${cdr.path}")
     private String pathToCdr;
 
+    private final long millisecondsInOneDay = 24*60*60*1000;
+
     private final BrtService brtService;
 
+    // поля с информацией про абонентов нужны исключительно
+    // для генерации записей о звонках пользователей находящихся в данный момент в базе
+    private final AbonentRepo abonentRepo;
 
+    private List<Abonent> abonents;
 
-    public CdrService(BrtService brtService) {
+    public CdrService(BrtService brtService, AbonentRepo abonentRepo) {
         this.brtService = brtService;
+        this.abonentRepo = abonentRepo;
     }
 
     private void generate() {
+        this.abonents = abonentRepo.findAll();
         Random randomize = new Random();
         String formattedDateStart = null, formattedDateEnd=null, phoneCall;
         ArrayList<CDR> cdrList = new ArrayList<>();
@@ -51,17 +61,27 @@ public class CdrService {
             } else {
                 phoneCall = "02";
             }
+            // генерируем индекс абонента, номер телефона которого используем.
+            int abonentId = randomize.nextInt(abonents.size() * 4 / 3 +1);
 
-            // выводим выбранное значение на экран
-            //System.out.println("Сгенерированный тип вызова: " + phoneCall);
+            String phone;
 
-            // создаем переменную для региона телефона
-            StringBuilder phone = new StringBuilder("7");
+            // если индекс превышает число абонентов "Ромашки", то сгенерим случайных номер
+            // другого оператора
+            if(abonentId >= abonents.size()){
+                // создаем переменную для региона телефона
+                StringBuilder phoneNumber = new StringBuilder("7");
 
-            // генерируем 10 случайных цифр от 0 до 9 и добавляем их к строке
-            for (int j = 0; j < 10; j++) {
-                int randomPhone = randomize.nextInt(10);
-                phone.append(randomPhone);
+                // генерируем 9 случайных цифр от 0 до 9 и добавляем их к строке
+                for (int j = 1; j < 10; j++) {
+                    int randomPhone = randomize.nextInt(10);
+                    phoneNumber.append(randomPhone);
+                }
+                phone = phoneNumber.toString();
+            }
+            // иначе - выбираем номер существующего абонента
+            else{
+                phone = abonents.get(abonentId).getPhoneNumber();
             }
 
             // выводим сгенерированную строку на экран
@@ -76,9 +96,10 @@ public class CdrService {
                 Date start = sdf.parse(startDate);
                 Date end = sdf.parse(endDate);
 
-                // генерируем случайное число между начальной и конечной датой в миллисекундах
+                // генерируем случайное число между начальной и конечной датой в миллисекундах,
+                // при это возьмем за данность, что разговор длился не больше суток
                 long randomStart = ThreadLocalRandom.current().nextLong(start.getTime(), end.getTime() + 1);
-                long randomEnd = ThreadLocalRandom.current().nextLong(randomStart, end.getTime() + 1);
+                long randomEnd = ThreadLocalRandom.current().nextLong(randomStart, Long.min(randomStart+millisecondsInOneDay, end.getTime()) + 1);
 
                 // создаем объекты Date из случайного количества миллисекунд
                 Date resultStart = new Date(randomStart);

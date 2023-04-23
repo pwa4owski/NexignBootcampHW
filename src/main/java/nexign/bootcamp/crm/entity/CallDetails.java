@@ -26,7 +26,7 @@ public class CallDetails {
 
     private LocalTime duration;
 
-    private double cost;
+    private Double cost;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "abonent_id")

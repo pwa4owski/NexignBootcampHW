@@ -9,11 +9,10 @@ import java.time.LocalTime;
 
 @Getter
 @Setter
-//@Builder
 public class CallReport extends Call{
 
     private LocalTime duration;
-    private double cost;
+    private Double cost;
 
     public CallReport(CallType callType, LocalDateTime started, LocalDateTime ended) {
         super(callType, started, ended);

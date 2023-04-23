@@ -1,10 +1,14 @@
 package nexign.bootcamp.crm.service;
 
+import nexign.bootcamp.crm.dto.AbonentReportResponse;
+import nexign.bootcamp.crm.dto.CallReportDTO;
 import nexign.bootcamp.crm.dto.PaymentRequest;
 import nexign.bootcamp.crm.dto.PaymentResponse;
 import nexign.bootcamp.crm.repository.AbonentRepo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class AbonentService {
@@ -24,6 +28,34 @@ public class AbonentService {
                 .id(abonent.getId())
                 .numberPhone(abonent.getPhoneNumber())
                 .money(abonent.getBalance())
+                .build();
+    }
+
+    public AbonentReportResponse getReport(String numberPhone) {
+        var abonent = abonentRepo.findByPhoneNumber(numberPhone)
+                .orElseThrow(() -> new IllegalArgumentException("пользователь с таким номером телефона не найден"));
+        List<CallReportDTO> callReports = abonent.getCalls().stream()
+                .map(callDetails -> CallReportDTO.builder()
+                        .callType(callDetails.getCallType())
+                        .startTime(callDetails.getStartTime())
+                        .endTime(callDetails.getEndTime())
+                        .duration(callDetails.getDuration())
+                        .cost(callDetails.getCost())
+                        .build())
+                .toList();
+        // если есть абонплата, то включаем ее в отчет
+        double totalCost = (abonent.getTariff().getTimeDetails() == null ?
+                                0 :
+                                abonent.getTariff().getTimeDetails().getAbonentFee());
+        totalCost += callReports.stream()
+                .mapToDouble(CallReportDTO::getCost).sum();
+
+        return AbonentReportResponse.builder()
+                .id(abonent.getId())
+                .numberPhone(abonent.getPhoneNumber())
+                .tariffIndex(abonent.getTariff().getId())
+                .payload(callReports)
+                .totalCost(totalCost)
                 .build();
     }
 }

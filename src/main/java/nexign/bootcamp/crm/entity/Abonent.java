@@ -21,13 +21,16 @@ public class Abonent {
     @Column(name = "phone_number", unique = true, nullable = false)
     private String phoneNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
     @JoinColumn(name = "tariff_id")
     private Tariff tariff;
 
+
     private Double balance;
 
-    @OneToMany(mappedBy = "abonent", fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    @OneToMany(mappedBy = "abonent", fetch = FetchType.LAZY,
+            cascade = {CascadeType.ALL}, orphanRemoval = true)
+    @Setter(AccessLevel.PRIVATE)
     List<CallDetails> calls = new ArrayList<>();
 
     public void addCall(CallDetails callDetails){
