@@ -1,12 +1,16 @@
 package nexign.bootcamp.util;
 
 import nexign.bootcamp.crm.entity.Abonent;
+import nexign.bootcamp.crm.entity.Manager;
 import nexign.bootcamp.crm.entity.Tariff;
 import nexign.bootcamp.crm.entity.TariffTimeDetails;
 import nexign.bootcamp.crm.repository.AbonentRepo;
+import nexign.bootcamp.crm.repository.ManagerRepo;
 import nexign.bootcamp.crm.repository.TariffRepo;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
@@ -16,9 +20,18 @@ public class DataGenerationService {
 
     private final TariffRepo tariffRepo;
 
-    public DataGenerationService(AbonentRepo abonentRepo, TariffRepo tariffRepo) {
+    private final ManagerRepo managerRepo;
+
+    @Value("${abonents.amount}")
+    private Integer abonentsAmount;
+
+    @Value("${managers.amount}")
+    private Integer managersAmount;
+
+    public DataGenerationService(AbonentRepo abonentRepo, TariffRepo tariffRepo, ManagerRepo managerRepo) {
         this.abonentRepo = abonentRepo;
         this.tariffRepo = tariffRepo;
+        this.managerRepo = managerRepo;
     }
 
     private void genarateTariffs(){
@@ -76,8 +89,8 @@ public class DataGenerationService {
             // создаем переменную для региона телефона
             StringBuilder phoneNumber = new StringBuilder("7");
 
-            // генерируем 9 случайных цифр от 0 до 9 и добавляем их к строке
-            for (int j = 1; j < 10; j++) {
+            // генерируем 10 случайных цифр от 0 до 9 и добавляем их к строке
+            for (int j = 0; j < 10; j++) {
                 int randomPhone = random.nextInt(10);
                 phoneNumber.append(randomPhone);
             }
@@ -88,18 +101,43 @@ public class DataGenerationService {
             //случайное дробное от -3000 до 7000 с точностью до сотых
             Double balance = Math.ceil((random.nextDouble(10000) - 3000) * 100) / 100;
 
+            //генерируем случайный восьми символьный пароль
+            var bytes = new byte[8];
+            random.nextBytes(bytes);
+            String password = Base64.getEncoder().encodeToString(bytes);
+
             var abonent = Abonent.builder()
                     .phoneNumber(phoneNumber.toString())
                     .tariff(tariff)
                     .balance(balance)
+                    .password(password)
                     .build();
 
             abonentRepo.save(abonent);
         }
     }
 
+    private void generateManagers(int amount){
+        Random random = new Random();
+        for(int i = 0; i < amount; i++){
+            String login = "manager"+i;
+            //генерируем случайный восьми символьный пароль
+            var bytes = new byte[8];
+            random.nextBytes(bytes);
+            String password = Base64.getEncoder().encodeToString(bytes);
+
+            var manager = Manager.builder()
+                    .login(login)
+                    .password(password)
+                    .build();
+
+            managerRepo.save(manager);
+        }
+    }
+
     public void generateData(){
         genarateTariffs();
-        generateAbonents(10);
+        generateAbonents(abonentsAmount);
+        generateManagers(managersAmount);
     }
 }

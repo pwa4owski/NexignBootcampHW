@@ -31,7 +31,10 @@ public class AbonentService {
                 .build();
     }
 
-    public AbonentReportResponse getReport(String numberPhone) {
+    public AbonentReportResponse getReport(String numberPhone, String actualAbonentNumber) throws IllegalAccessException {
+        if(!numberPhone.equals(actualAbonentNumber)){
+            throw new IllegalAccessException("нельзя запрашивать детализацию звонков не на свой номер телефона!");
+        }
         var abonent = abonentRepo.findByPhoneNumber(numberPhone)
                 .orElseThrow(() -> new IllegalArgumentException("пользователь с таким номером телефона не найден"));
         List<CallReportDTO> callReports = abonent.getCalls().stream()
@@ -43,7 +46,8 @@ public class AbonentService {
                         .cost(callDetails.getCost())
                         .build())
                 .toList();
-        // если есть абонплата, то включаем ее в отчет
+        // если есть абон.плата, то включаем ее в отчет
+        // к сожалению, тут сидит баг - ведь если мы поменяли тариф, то информацию будет неактуальна
         double totalCost = (abonent.getTariff().getTimeDetails() == null ?
                                 0 :
                                 abonent.getTariff().getTimeDetails().getAbonentFee());

@@ -1,6 +1,7 @@
 package nexign.bootcamp.brt.service;
 
 import lombok.extern.slf4j.Slf4j;
+import nexign.bootcamp.brt.exception.InvalidLineException;
 import nexign.bootcamp.brt.exception.NoSuchAbonentException;
 import nexign.bootcamp.brt.exception.NotPositiveBalanceException;
 import nexign.bootcamp.brt.model.AbonentTarifficationRes;
@@ -39,7 +40,7 @@ public class BrtService {
     private String cdrLineToCdrPlus(String cdrLine) {
         String[] arg = cdrLine.split(", ");
         if (arg.length != 4) {
-            throw new IllegalArgumentException("строка некорректна - пропуск");
+            throw new InvalidLineException("строка некорректна - пропуск");
         }
         var abonent = abonentRepo.findByPhoneNumber(arg[1])
                 .orElseThrow(() -> new NoSuchAbonentException(arg[1]));

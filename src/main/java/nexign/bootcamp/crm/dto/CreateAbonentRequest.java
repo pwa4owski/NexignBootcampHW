@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 public class CreateAbonentRequest {
-    @Pattern(regexp = "\\d{10}", message = "Номер некорректен")
+    @Pattern(regexp = "\\d{11}", message = "Номер некорректен")
     @NotBlank
     private String numberPhone;
     @NotNull

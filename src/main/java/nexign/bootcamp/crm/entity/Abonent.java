@@ -21,6 +21,9 @@ public class Abonent {
     @Column(name = "phone_number", unique = true, nullable = false)
     private String phoneNumber;
 
+    @Column(name = "pswrd", nullable = false)
+    private String password;
+
     @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
     @JoinColumn(name = "tariff_id")
     private Tariff tariff;

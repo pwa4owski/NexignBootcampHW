@@ -1,5 +1,6 @@
 package nexign.bootcamp.cdr.service;
 
+import lombok.extern.slf4j.Slf4j;
 import nexign.bootcamp.brt.service.BrtService;
 import nexign.bootcamp.cdr.model.CDR;
 import nexign.bootcamp.crm.dto.AbonentTarrificationResponse;
@@ -18,12 +19,29 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@Slf4j
 public class CdrService {
 
     @Value("${cdr.path}")
     private String pathToCdr;
 
-    private final long millisecondsInOneDay = 24*60*60*1000;
+    @Value("${cdr.calls.amount}")
+    private Integer callsAmount;
+
+    // диапазон начальной и конечной даты в пределах которых будет генерироваться начало и конец
+    // звонка задается в application.properties в формате YYYYMMDDHH24MMSS
+    @Value("${cdr.start.date}")
+    private String startDate;
+
+    @Value("${cdr.end.date}")
+    private String endDate;
+
+    // создаем объекты класса SimpleDateFormat для парсинга даты и форматирования вывода
+    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+    private final SimpleDateFormat outputSdf = new SimpleDateFormat("yyyyMMddHHmmss");
+
+    private final long millisecondsInOneHour = 60*60*1000;
+    private final long millisecondsInOneDay = 24*millisecondsInOneHour;
 
     private final BrtService brtService;
 
@@ -41,55 +59,43 @@ public class CdrService {
     private void generate() {
         this.abonents = abonentRepo.findAll();
         Random randomize = new Random();
-        String formattedDateStart = null, formattedDateEnd=null, phoneCall;
+        String formattedDateStart = null, formattedDateEnd=null, callType, phoneNumber;
         ArrayList<CDR> cdrList = new ArrayList<>();
-        // задаем количество записей
-        int amount=50;
-        // задаем диапазон начальной и конечной даты в пределах которых будет генерироваться начало и конец звонка
-        // в формате YYYYMMDDHH24MMSS
-        String startDate = "20220101000000";
-        String endDate = "20221231235959";
 
-        for(int i=0; i < amount; i++) {
+
+        for(int i=0; i < callsAmount; i++) {
 
             // генерируем случайное число от 0 до 1
             int randomNumber = randomize.nextInt(2);
 
             // если случайное число равно 0, то выбираем значение "01", иначе выбираем "02"
             if (randomNumber == 0) {
-                phoneCall = "01";
+                callType = "01";
             } else {
-                phoneCall = "02";
+                callType = "02";
             }
+
             // генерируем индекс абонента, номер телефона которого используем.
             int abonentId = randomize.nextInt(abonents.size() * 4 / 3 +1);
 
-            String phone;
-
-            // если индекс превышает число абонентов "Ромашки", то сгенерим случайных номер
+            // если индекс превышает число абонентов "Ромашки", то сгенерим случайный номер
             // другого оператора
             if(abonentId >= abonents.size()){
                 // создаем переменную для региона телефона
-                StringBuilder phoneNumber = new StringBuilder("7");
+                StringBuilder phoneNumberBuilder = new StringBuilder("7");
 
-                // генерируем 9 случайных цифр от 0 до 9 и добавляем их к строке
-                for (int j = 1; j < 10; j++) {
+                // генерируем 10 случайных цифр от 0 до 9 и добавляем их к строке
+                for (int j = 0; j < 10; j++) {
                     int randomPhone = randomize.nextInt(10);
-                    phoneNumber.append(randomPhone);
+                    phoneNumberBuilder.append(randomPhone);
                 }
-                phone = phoneNumber.toString();
+                phoneNumber = phoneNumberBuilder.toString();
             }
             // иначе - выбираем номер существующего абонента
+            // вероятность этого варианта около 75%
             else{
-                phone = abonents.get(abonentId).getPhoneNumber();
+                phoneNumber = abonents.get(abonentId).getPhoneNumber();
             }
-
-            // выводим сгенерированную строку на экран
-            //System.out.println("Сгенерированный номер: " + phone);
-
-            // создаем объекты класса SimpleDateFormat для парсинга даты и форматирования вывода
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-            SimpleDateFormat outputSdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
             try {
                 // парсим даты в формате YYYYMMDDHH24MMSS
@@ -98,24 +104,28 @@ public class CdrService {
 
                 // генерируем случайное число между начальной и конечной датой в миллисекундах,
                 // при это возьмем за данность, что разговор длился не больше суток
+                // и вероятность разговора длительностью более часа - 5%
                 long randomStart = ThreadLocalRandom.current().nextLong(start.getTime(), end.getTime() + 1);
-                long randomEnd = ThreadLocalRandom.current().nextLong(randomStart, Long.min(randomStart+millisecondsInOneDay, end.getTime()) + 1);
+                int n = randomize.nextInt(100);
+                long rightBoarder = randomStart + (n >= 95 ? millisecondsInOneDay : millisecondsInOneHour);
+                long randomEnd = ThreadLocalRandom.current().nextLong(randomStart, Long.min(rightBoarder, end.getTime()) + 1);
 
-                // создаем объекты Date из случайного количества миллисекунд
-                Date resultStart = new Date(randomStart);
-                Date resultEnd = new Date(randomEnd);
-
-                // форматируем и выводим даты
-                //System.out.println("Сгенерированная дата начала: " + outputSdf.format(resultStart));
-                //System.out.println("Сгенерированная дата конца: " + outputSdf.format(resultEnd));
-                formattedDateStart = outputSdf.format(resultStart);
-                formattedDateEnd = outputSdf.format(resultEnd);
+                // форматируем
+                formattedDateStart = outputSdf.format(new Date(randomStart));
+                formattedDateEnd = outputSdf.format(new Date(randomEnd));
 
             } catch (Exception ex) {
-                System.out.println("Ошибка: " + ex.getMessage());
+                log.atError().log("CDR: " + ex.getMessage());
             }
 
-            cdrList.add(new CDR(phoneCall, phone.toString(), formattedDateStart, formattedDateEnd));
+            var cdrRecord = CDR.builder()
+                    .typeOfCall(callType)
+                    .number(phoneNumber)
+                    .startCall(formattedDateStart)
+                    .endCall(formattedDateEnd)
+                    .build();
+
+            cdrList.add(cdrRecord);
         }
 
         // производим запись в файл

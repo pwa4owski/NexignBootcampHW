@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 public class PaymentRequest {
-    @Pattern(regexp = "\\d{10}", message = "Номер некорректен")
+    @Pattern(regexp = "\\d{11}", message = "Номер некорректен")
     @NotBlank
     private String numberPhone;
     @Min(value = 1, message = "Сумма пополнения должна быть положительной")

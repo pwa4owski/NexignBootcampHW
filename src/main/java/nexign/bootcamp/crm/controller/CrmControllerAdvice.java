@@ -29,10 +29,10 @@ public class CrmControllerAdvice {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler({IllegalArgumentException.class, IllegalAccessException.class})
     @ResponseBody
     public String handleIllegalArgument(
-            IllegalArgumentException ex) {
+            Exception ex) {
         return ex.getMessage();
     }
 
