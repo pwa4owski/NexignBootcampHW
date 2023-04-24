@@ -1,5 +1,8 @@
 package nexign.bootcamp.crm.controller;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import nexign.bootcamp.crm.dto.AbonentReportResponse;
 import nexign.bootcamp.crm.dto.PaymentRequest;
 import nexign.bootcamp.crm.dto.PaymentResponse;
@@ -10,17 +13,14 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@OpenAPIDefinition(info = @Info(title = "Billing CRM API"))
+@SecurityRequirement(name = "basicAuth")
 @RequestMapping("/abonent")
 public class AbonentController {
     private final AbonentService abonentService;
 
     public AbonentController(AbonentService abonentService) {
         this.abonentService = abonentService;
-    }
-
-    @GetMapping("/ping")
-    public String ping(){
-        return "pong!";
     }
 
     @PatchMapping("/pay")

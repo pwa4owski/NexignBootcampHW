@@ -7,7 +7,9 @@ import nexign.bootcamp.crm.repository.AbonentRepo;
 import nexign.bootcamp.crm.repository.TariffRepo;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class ManagerService {
@@ -40,9 +42,19 @@ public class ManagerService {
         var tariff = tariffRepo.findById(createAbonentRequest.getTariffId())
                 .orElseThrow(() -> new IllegalArgumentException("тариф с таким идентификатором отсутствует"));
 
+        if(abonentRepo.findByPhoneNumber(createAbonentRequest.getNumberPhone()).isPresent()){
+            throw new IllegalArgumentException("этот номер телефона уже используется другим абонентом");
+        }
+
+        //генерируем случайный восьми символьный пароль
+        var bytes = new byte[8];
+        new Random().nextBytes(bytes);
+        String password = Base64.getEncoder().encodeToString(bytes);
+
         var abonent = Abonent.builder()
                 .balance(createAbonentRequest.getBalance())
                 .phoneNumber(createAbonentRequest.getNumberPhone())
+                .password(password)
                 .tariff(tariff)
                 .build();
 
