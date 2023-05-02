@@ -1,0 +1,47 @@
+version: "3"
+services:
+  billing-system:
+    #build: .
+    image: pwa4owski/nexign-billing-system
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/postgres"
+      SPRING_DATASOURCE_USERNAME: "postgres"
+      SPRING_DATASOURCE_PASSWORD: "postgres"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: "public"
+      SPRING_JPA_GENERATE-DDL: "false"
+      SPRING_JPA_SHOW_SQL: "false"
+      SPRING_JPA_HIBERNATE_DDL-AUTO: "create"
+      SERVER_PORT: "8090"
+      #rabbit
+      SPRING_RABBITMQ_HOST: "rabbitmq"
+      SPRING_RABBITMQ_PORT: "5672"
+      SPRING_RABBITMQ_USERNAME: "guest"
+      SPRING_RABBITMQ_PASSWORD: "guest"
+      #параметры генерации данных
+      CDR_CALLS_AMOUNT: "60"
+      CDR_START_DATE: "20220101000000"
+      CDR_END_DATE: "20221231235959"
+      ABONENTS_AMOUNT: "18"
+      MANAGERS_AMOUNT: "4"
+    ports:
+      - "8090:8090"
+    container_name: "billing-system"
+    depends_on:
+      - postgres
+      - rabbitmq
+  postgres:
+    image: "postgres:14-alpine"
+    container_name: "pg"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
+    ports:
+      - "5432:5432"
+  rabbitmq:
+    image: "rabbitmq:3-management-alpine"
+    container_name: 'rabbitmq'
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
