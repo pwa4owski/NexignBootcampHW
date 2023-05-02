@@ -1,13 +1,14 @@
 package APITests;
-
-import io.restassured.http.ContentType;
+import APITests.ext.ApiTestExtension;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.given;
 
 @DisplayName("/manager")
+@ExtendWith(ApiTestExtension.class)
 public class ApiManagerTest {
     @Test
     @DisplayName("/manager/abonent: 200, создание абонента")
@@ -15,18 +16,12 @@ public class ApiManagerTest {
         given()
                 .auth()
                 .basic("manager0","Qq4UAr6Ij84=")
-                .contentType(ContentType.JSON)
-                .log()
-                .all()
                 .body("{\n" +
                         "  \"numberPhone\": \"79133562233\",\n" +
                         "  \"tariffId\": 3,\n" +
                         "  \"balance\": 200\n" +
                         "}")
-                .log()
-                .all()
-                .post("http://localhost:8090/manager/abonent")
-                .prettyPeek()
+                .post("/manager/abonent")
                 .then()
                 .statusCode(200)
                 .body("numberPhone", Matchers.equalTo("79133562233"))
@@ -40,41 +35,28 @@ public class ApiManagerTest {
         given()
                 .auth()
                 .basic("manager0","Qq4UAr6Ij84=")
-                .contentType(ContentType.JSON)
-                .log()
-                .all()
                 .body("{\n" +
                         "  \"numberPhone\": \"71653459394\",\n" +
-                        "  \"tariffId\": 3\n" +
+                        "  \"tariffId\": 11\n" +
                         "}")
-                .log()
-                .all()
-                .patch("http://localhost:8090/manager/change-tariff")
-                .prettyPeek()
+                .patch("/manager/change-tariff")
                 .then()
                 .statusCode(200)
                 .body("id", Matchers.equalTo(2))
                 .body("numberPhone", Matchers.equalTo("71653459394"))
-                .body("tariffId", Matchers.equalTo(3));
+                .body("tariffId", Matchers.equalTo(11));
 
     }
 
     @Test
-    @DisplayName("/manager/billing: 200, просмотр баланса")
+    @DisplayName("/manager/billing: 200, тарификация")
     void patchBilling() {
         given()
                 .auth()
                 .basic("manager0","Qq4UAr6Ij84=")
-                .contentType(ContentType.JSON)
-                .log()
-                .all()
-                .patch("http://localhost:8090/manager/billing")
-                .prettyPeek()
+                .patch("/manager/billing")
                 .then()
                 .statusCode(200);
-                //.body("numberPhone", Matchers.equalTo("71653459394"))
-                //.body("numberPhone", Matchers.hasItem("76056246620"));
-                //.body("balance", Matchers.equalTo(12712.81F));
 
     }
 }
