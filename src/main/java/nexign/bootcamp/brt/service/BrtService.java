@@ -40,21 +40,22 @@ public class BrtService {
     private String cdrLineToCdrPlus(String cdrLine) {
         String[] arg = cdrLine.split(", ");
         if (arg.length != 4) {
-            throw new InvalidLineException("строка некорректна - пропуск");
+            throw new InvalidLineException("cdr line is invalid, skip...");
         }
         var abonent = abonentRepo.findByPhoneNumber(arg[1])
                 .orElseThrow(() -> new NoSuchAbonentException(arg[1]));
         if(abonent.getBalance() < 0){
             throw new NotPositiveBalanceException(arg[1]);
         }
+        log.atInfo().log("abonent {} was authorized, tariff {}", abonent.getPhoneNumber(), abonent.getTariff().getId());
         return String.format("%s, %d\n", cdrLine, abonent.getTariff().getId());
     }
 
 
     public void generateCdrPlus() throws IOException {
-        File reportFile = new File(pathToCdr);
+        File cdrPlusFile = new File(pathToCdr);
         try (
-                FileInputStream inputStream = new FileInputStream(reportFile);
+                FileInputStream inputStream = new FileInputStream(cdrPlusFile);
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
                 FileWriter writer = new FileWriter(pathToCdrPlus)
@@ -65,9 +66,10 @@ public class BrtService {
                     String cdrPlusLine = cdrLineToCdrPlus(line);
                     writer.write(cdrPlusLine);
                 } catch (RuntimeException ex) {
-                    log.atInfo().log(ex.getMessage());
+                    log.atWarn().log(ex.getMessage());
                 }
             }
+            log.atInfo().log("CDR+ was generated");
         }
     }
 

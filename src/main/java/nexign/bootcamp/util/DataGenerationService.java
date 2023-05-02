@@ -7,6 +7,7 @@ import nexign.bootcamp.crm.entity.TariffTimeDetails;
 import nexign.bootcamp.crm.repository.AbonentRepo;
 import nexign.bootcamp.crm.repository.ManagerRepo;
 import nexign.bootcamp.crm.repository.TariffRepo;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,12 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Этот класс нужен для первичной генерации данных в БД
+ * Тут мы генерируем заявленные тарифы, абонентов и менеджеров,
+ * причем количество записей можно регулировать с помощью параметров
+ * {@link abonentsAmount} и {@link managersAmount}
+ */
 @Service
 public class DataGenerationService {
     private final AbonentRepo abonentRepo;

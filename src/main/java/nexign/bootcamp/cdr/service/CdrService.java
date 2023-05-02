@@ -49,8 +49,13 @@ public class CdrService {
 
     private final BrtService brtService;
 
-    // поля с информацией про абонентов нужны исключительно
-    // для генерации записей о звонках пользователей находящихся в данный момент в базе
+    /** Поля с информацией про абонентов нужны исключительно
+     * для генерации записей о звонках пользователей находящихся в данный момент в базе
+     * {@link abonentNumbers} играет роль кэша и позволяет за O(1) определять количество
+     * абонентов и обращаться к любому из них по индексу. Обновление происходит
+     * при обработке сообщений в {@link #processMessage()}  сообщениям приходящим
+     * в abonentCache.
+     */
     private final AbonentRepo abonentRepo;
     private List<String> abonentNumbers = new ArrayList<>();
     @RabbitListener(queues = "abonentCache")
