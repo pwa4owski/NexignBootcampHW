@@ -6,9 +6,12 @@ import nexign.bootcamp.cdr.model.CDR;
 import nexign.bootcamp.crm.dto.AbonentTarrificationResponse;
 import nexign.bootcamp.crm.entity.Abonent;
 import nexign.bootcamp.crm.repository.AbonentRepo;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -19,6 +22,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@EnableRabbit
 @Slf4j
 public class CdrService {
 
@@ -48,8 +52,24 @@ public class CdrService {
     // поля с информацией про абонентов нужны исключительно
     // для генерации записей о звонках пользователей находящихся в данный момент в базе
     private final AbonentRepo abonentRepo;
+    private List<String> abonentNumbers = new ArrayList<>();
+    @RabbitListener(queues = "abonentCache")
+    private void processMessage(String message) {
+        //если кэш протух, то очищаем его
+        if (message.equals("expired")) {
+            log.atInfo().log("cache cleared {}", message);
+            abonentNumbers.clear();
+            return;
+        }
+        //если пришел номер телефона, то добавим нового абонента в кэш
+        if (!message.matches("\\d{11}")) {
+            log.atWarn().log("unexpected message received: {}", message);
+            return;
+        }
+        abonentNumbers.add(message);
+        log.atInfo().log("cache updated with number {}", message);
+    }
 
-    private List<Abonent> abonents;
 
     public CdrService(BrtService brtService, AbonentRepo abonentRepo) {
         this.brtService = brtService;
@@ -57,7 +77,6 @@ public class CdrService {
     }
 
     private void generate() {
-        this.abonents = abonentRepo.findAll();
         Random randomize = new Random();
         String formattedDateStart = null, formattedDateEnd=null, callType, phoneNumber;
         ArrayList<CDR> cdrList = new ArrayList<>();
@@ -74,13 +93,17 @@ public class CdrService {
             } else {
                 callType = "02";
             }
-
+            //если кэш пуст, идем в БД
+            if(abonentNumbers.size() == 0){
+                abonentNumbers = new ArrayList<>(abonentRepo.findAll().stream()
+                        .map(Abonent::getPhoneNumber).toList());
+            }
             // генерируем индекс абонента, номер телефона которого используем.
-            int abonentId = randomize.nextInt(abonents.size() * 4 / 3 +1);
+            int abonentId = randomize.nextInt(abonentNumbers.size() * 4 / 3 +1);
 
             // если индекс превышает число абонентов "Ромашки", то сгенерим случайный номер
             // другого оператора
-            if(abonentId >= abonents.size()){
+            if(abonentId >= abonentNumbers.size()){
                 // создаем переменную для региона телефона
                 StringBuilder phoneNumberBuilder = new StringBuilder("7");
 
@@ -94,7 +117,7 @@ public class CdrService {
             // иначе - выбираем номер существующего абонента
             // вероятность этого варианта около 75%
             else{
-                phoneNumber = abonents.get(abonentId).getPhoneNumber();
+                phoneNumber = abonentNumbers.get(abonentId);
             }
 
             try {
@@ -129,12 +152,14 @@ public class CdrService {
         }
 
         // производим запись в файл
+        File cdrFile = new File(pathToCdr);
         try (
-                FileWriter writer = new FileWriter(pathToCdr)
+                FileWriter writer = new FileWriter(cdrFile)
         )
         {
             for (CDR cdr : cdrList) {
                 writer.write(cdr.toString() + "\n");
+                log.atInfo().log("call added: " + cdr + "\n");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

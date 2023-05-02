@@ -22,16 +22,19 @@ public class DataGenerationService {
 
     private final ManagerRepo managerRepo;
 
+    private final AmqpTemplate amqpTemplate;
+
     @Value("${abonents.amount}")
     private Integer abonentsAmount;
 
     @Value("${managers.amount}")
     private Integer managersAmount;
 
-    public DataGenerationService(AbonentRepo abonentRepo, TariffRepo tariffRepo, ManagerRepo managerRepo) {
+    public DataGenerationService(AbonentRepo abonentRepo, TariffRepo tariffRepo, ManagerRepo managerRepo, AmqpTemplate amqpTemplate) {
         this.abonentRepo = abonentRepo;
         this.tariffRepo = tariffRepo;
         this.managerRepo = managerRepo;
+        this.amqpTemplate = amqpTemplate;
     }
 
     private void genarateTariffs(){

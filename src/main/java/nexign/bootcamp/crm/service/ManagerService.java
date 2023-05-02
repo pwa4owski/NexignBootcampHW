@@ -5,6 +5,7 @@ import nexign.bootcamp.crm.dto.*;
 import nexign.bootcamp.crm.entity.Abonent;
 import nexign.bootcamp.crm.repository.AbonentRepo;
 import nexign.bootcamp.crm.repository.TariffRepo;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
@@ -16,11 +17,13 @@ public class ManagerService {
     private final AbonentRepo abonentRepo;
     private final TariffRepo tariffRepo;
 
+    private final AmqpTemplate amqpTemplate;
     private final CdrService cdrService;
 
-    public ManagerService(AbonentRepo abonentRepo, TariffRepo tariffRepo, CdrService cdrService) {
+    public ManagerService(AbonentRepo abonentRepo, TariffRepo tariffRepo, AmqpTemplate amqpTemplate, CdrService cdrService) {
         this.abonentRepo = abonentRepo;
         this.tariffRepo = tariffRepo;
+        this.amqpTemplate = amqpTemplate;
         this.cdrService = cdrService;
     }
 
@@ -59,6 +62,7 @@ public class ManagerService {
                 .build();
 
         abonent = abonentRepo.save(abonent);
+        amqpTemplate.convertAndSend("abonentCache", abonent.getPhoneNumber());
         return CreateAbonentResponse.builder()
                 .balance(abonent.getBalance())
                 .numberPhone(abonent.getPhoneNumber())
@@ -67,6 +71,7 @@ public class ManagerService {
     }
 
     public List<AbonentTarrificationResponse> processBilling() {
+        //начинаем процесс тарификации тах же пользователей на вновь сгенерированном cdr
         return cdrService.processTariffication();
     }
 }
