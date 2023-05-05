@@ -7,14 +7,14 @@ import static io.restassured.RestAssured.given;
 
 @Endpoint("/abonent/report/")
 public class ApiReportEndpoint extends BaseEndpoint {
-    public void reportRequest(AbonentReportResponse abonentReportResponse) {
+    public void reportRequest(AbonentReportResponse abonentReportResponse, String password, Integer code) {
         given()
                 .auth()
-                .basic("74325189429","B+VobxzQEV8=")
-                .get(endpoint +"74325189429")
+                .basic(abonentReportResponse.getNumberPhone(), password)
+                .get(endpoint + abonentReportResponse.getNumberPhone())
                 .then()
-                .statusCode(200)
-                .body("numberPhone", Matchers.equalTo("74325189429"))
+                .statusCode(code)
+                .body("numberPhone", Matchers.equalTo(abonentReportResponse.getNumberPhone()))
                 .extract()
                 .as(AbonentReportResponse.class);
     }

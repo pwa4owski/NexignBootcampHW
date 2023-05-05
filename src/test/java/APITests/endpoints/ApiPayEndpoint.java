@@ -7,15 +7,14 @@ import static io.restassured.RestAssured.given;
 @Endpoint("/abonent/pay")
 public class ApiPayEndpoint extends BaseEndpoint {
 
-
-    public void paymentRequest(PaymentRequest paymentRequest) {
+    public void paymentRequest(PaymentRequest paymentRequest, String login, String password, Integer code) {
                 given()
                 .auth()
-                .basic("74325189429","B+VobxzQEV8=")
+                .basic(login,password)
                 .body(paymentRequest)
                 .patch(endpoint)
                 .then()
-                .statusCode(200);
+                .statusCode(code);
     }
 
 }

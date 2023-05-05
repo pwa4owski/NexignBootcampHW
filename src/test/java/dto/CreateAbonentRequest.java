@@ -23,5 +23,5 @@ public class CreateAbonentRequest {
     private Integer tariffId;
     @NotNull  //ограничения на значения не ставим, вдруг можно создать пользователя с долгом
     @JsonProperty("balance")
-    private Double balance;
+    private Float balance;
 }

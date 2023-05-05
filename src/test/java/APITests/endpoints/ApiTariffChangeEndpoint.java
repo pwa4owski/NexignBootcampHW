@@ -7,15 +7,15 @@ import static io.restassured.RestAssured.given;
 
 @Endpoint("/manager/change-tariff")
 public class ApiTariffChangeEndpoint extends BaseEndpoint {
-    public void tariffChangeRequest(ChangeTariffRequest changeTariffRequest) {
+    public void tariffChangeRequest(ChangeTariffRequest changeTariffRequest, String login, String password, Integer code) {
         given()
                 .auth()
-                .basic("manager0","Sbcg5UVGrrY=")
+                .basic(login, password)
                 .body(changeTariffRequest)
                 .patch(endpoint)
                 .then()
-                .statusCode(200)
-                .body("numberPhone", Matchers.equalTo("71223562226"))
-                .body("tariffId", Matchers.equalTo(6));
+                .statusCode(code)
+                .body("numberPhone", Matchers.equalTo(changeTariffRequest.getNumberPhone()))
+                .body("tariffId", Matchers.equalTo(changeTariffRequest.getTariffId()));
     }
 }

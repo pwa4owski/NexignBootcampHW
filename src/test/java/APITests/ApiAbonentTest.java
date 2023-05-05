@@ -12,20 +12,27 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @DisplayName("/abonent")
 @ExtendWith(ApiTestExtension.class)
 public class ApiAbonentTest {
+    public String abonentPhone = "75418522523";
+    public String abonentPassword= "ln7UN2fgDOc=";
     @Test
     @DisplayName("/abonent/pay: 200, пополнение счета")
     void patchPayTest() {
         new ApiPayEndpoint().paymentRequest(PaymentRequest.builder()
                 .money(100.0)
-                .numberPhone("74325189429")
-                .build());
+                .numberPhone(abonentPhone)
+                .build(),
+                abonentPhone,
+                abonentPassword,
+                200);
     }
-
     @Test
     @DisplayName("/abonent/report/{numberPhone}: 200, проверка истории звонков")
     void getReportTest() {
         new ApiReportEndpoint().reportRequest(AbonentReportResponse.builder()
-                .build());
+                .numberPhone(abonentPhone)
+                .build(),
+                abonentPassword,
+                200);
 
     }
 }

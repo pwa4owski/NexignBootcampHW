@@ -3,12 +3,12 @@ import static io.restassured.RestAssured.given;
 
 @Endpoint("/manager/billing")
 public class ApiBillingEndpoint extends BaseEndpoint {
-    public void billingRequest() {
+    public void billingRequest(String login, String password,Integer code) {
         given()
                 .auth()
-                .basic("manager0","Sbcg5UVGrrY=")
+                .basic(login,password)
                 .patch(endpoint)
                 .then()
-                .statusCode(200);
+                .statusCode(code);
     }
 }

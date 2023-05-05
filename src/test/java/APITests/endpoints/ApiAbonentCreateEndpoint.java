@@ -7,16 +7,16 @@ import static io.restassured.RestAssured.given;
 
 @Endpoint("/manager/abonent")
 public class ApiAbonentCreateEndpoint extends BaseEndpoint {
-    public void abonentCreateRequest(CreateAbonentRequest createAbonentRequest) {
+    public void abonentCreateRequest(CreateAbonentRequest createAbonentRequest, String login, String password,Integer code) {
         given()
                 .auth()
-                .basic("manager0","Sbcg5UVGrrY=")
+                .basic(login,password)
                 .body(createAbonentRequest)
                 .post(endpoint)
                 .then()
-                .statusCode(201)
-                .body("numberPhone", Matchers.equalTo("71223562226"))
-                .body("tariffId", Matchers.equalTo(3))
-                .body("balance", Matchers.equalTo(200.0F));
+                .statusCode(code)
+                .body("numberPhone", Matchers.equalTo(createAbonentRequest.getNumberPhone()))
+                .body("tariffId", Matchers.equalTo(createAbonentRequest.getTariffId()))
+                .body("balance", Matchers.equalTo((createAbonentRequest.getBalance())));
     }
 }
