@@ -8,7 +8,7 @@
 
   <h3 align="center">NexignBootcampHW</h3>
    <p align="center">
-    Описание проекта на момент 01.05.2023</p>
+    Описание проекта на момент 06.05.2023</p>
 </div>
 
 
