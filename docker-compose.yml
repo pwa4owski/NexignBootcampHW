@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
 services:
   billing-system:
     #build: .
@@ -27,8 +27,10 @@ services:
       - "8090:8090"
     container_name: "billing-system"
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
   postgres:
     image: "postgres:14-alpine"
     container_name: "pg"
@@ -38,10 +40,22 @@ services:
       POSTGRES_DB: "postgres"
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready","-d","postgres","-U","postgres" ]
+      interval: 5s
+      timeout: 1s
+      retries: 5
+      start_period: 5s
   rabbitmq:
     image: "rabbitmq:3-management-alpine"
     container_name: 'rabbitmq'
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 5s
+      timeout: 1s
+      retries: 5
+
 
