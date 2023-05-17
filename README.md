@@ -90,7 +90,7 @@
 
 * Спецификация публичных API автогенерируемая, и доступна по адресу http://localhost:8090/swagger-ui/index.html.
 * Если захотите протестировать через Postman, то нужно будет использовать Basic Auth:
-<img src="images/Postman.png">
+<img src="images/postman.png">
 <p align="right">(<a href="#readme-top">к началу</a>)</p>
 
 <!-- ROADMAP -->
